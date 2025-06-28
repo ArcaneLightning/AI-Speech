@@ -1,0 +1,31 @@
+body {
+    font-family: 'Inter', sans-serif;
+}
+.hero-bg {
+    background-color: #111827;
+}
+.feature-card {
+    background-color: #1F2937;
+    border: 1px solid #374151;
+}
+.btn-primary {
+    background-color: #4F46E5;
+    transition: background-color 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: #4338CA;
+}
+.btn-secondary {
+    background-color: #374151;
+    transition: background-color 0.3s ease;
+}
+.btn-secondary:hover {
+    background-color: #4B5563;
+}
+#recording-indicator {
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
