@@ -6,6 +6,42 @@
     <title>Orator.ai - Your AI Speech & Debate Coach</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        // IMPORTANT: Replace with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Make auth available globally for our script
+        window.auth = auth;
+        window.GoogleAuthProvider = GoogleAuthProvider;
+        window.signInWithPopup = signInWithPopup;
+        window.signOut = signOut;
+        window.onAuthStateChanged = onAuthStateChanged;
+    </script>
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -38,7 +74,7 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        #modal {
+        #modal, #auth-modal {
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
     </style>
@@ -48,51 +84,72 @@
     <!-- Header -->
     <header class="bg-gray-900/80 backdrop-blur-sm fixed top-0 left-0 right-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-white">Orator.ai</h1>
-            <nav>
-                <a href="#features" class="text-gray-300 hover:text-white px-4">Features</a>
-                <a href="#coach" class="text-gray-300 hover:text-white px-4">Coach</a>
-                <a href="#pricing" class="text-gray-300 hover:text-white px-4">Pricing</a>
+            <h1 id="home-link" class="text-2xl font-bold text-white cursor-pointer">Orator.ai</h1>
+            <nav class="flex items-center">
+                <a href="#features" class="nav-link text-gray-300 hover:text-white px-4">Features</a>
+                <a href="#coach" id="coach-nav-link" class="text-gray-300 hover:text-white px-4">Coach</a>
+                <a href="#pricing" class="nav-link text-gray-300 hover:text-white px-4">Pricing</a>
+                <div id="auth-container" class="ml-4"></div>
             </nav>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="pt-20">
-        <section class="hero-bg text-center py-24 px-6">
-            <div class="container mx-auto">
-                <h2 class="text-5xl font-extrabold text-white md:text-6xl">Conquer the Stage with Your AI Speech Coach</h2>
-                <p class="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">Get instant, data-driven feedback on your speeches and debates. Sharpen your arguments, perfect your delivery, and speak with confidence.</p>
-                <a href="#coach" class="mt-8 inline-block btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg">Try the Coach for Free</a>
-            </div>
-        </section>
+    <!-- Landing Page Content -->
+    <div id="landing-page-container">
+        <main class="pt-20">
+            <section class="hero-bg text-center py-24 px-6">
+                <div class="container mx-auto">
+                    <h2 class="text-5xl font-extrabold text-white md:text-6xl">Conquer the Stage with Your AI Speech Coach</h2>
+                    <p class="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">Get instant, data-driven feedback on your speeches and debates. Sharpen your arguments, perfect your delivery, and speak with confidence.</p>
+                    <button id="try-coach-btn" class="mt-8 inline-block btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg">Try the Coach for Free</button>
+                </div>
+            </section>
 
-        <!-- Features Section -->
-        <section id="features" class="py-20 px-6">
-            <div class="container mx-auto">
-                <h3 class="text-4xl font-bold text-center mb-12">Why Orator.ai?</h3>
-                <div class="grid md:grid-cols-3 gap-8">
-                    <div class="feature-card p-8 rounded-lg text-center">
-                        <div class="text-4xl mb-4">🎤</div>
-                        <h4 class="text-2xl font-bold mb-2">Real-Time Speech Analysis</h4>
-                        <p class="text-gray-400">Receive instant feedback on pace, filler words, and clarity as you speak.</p>
-                    </div>
-                    <div class="feature-card p-8 rounded-lg text-center">
-                        <div class="text-4xl mb-4">🧠</div>
-                        <h4 class="text-2xl font-bold mb-2">✨ In-Depth Argument Feedback</h4>
-                        <p class="text-gray-400">Our AI analyzes your argument's structure and helps you strengthen it.</p>
-                    </div>
-                    <div class="feature-card p-8 rounded-lg text-center">
-                        <div class="text-4xl mb-4">💡</div>
-                        <h4 class="text-2xl font-bold mb-2">✨ Impromptu Topic Generator</h4>
-                        <p class="text-gray-400">Never run out of practice ideas. Get debatable topics on demand.</p>
+            <section id="features" class="py-20 px-6">
+                <div class="container mx-auto">
+                    <h3 class="text-4xl font-bold text-center mb-12">An Ever-Evolving Coach</h3>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="feature-card p-8 rounded-lg text-center">
+                            <div class="text-4xl mb-4">🧠</div>
+                            <h4 class="text-2xl font-bold mb-2">Argument Strengthening</h4>
+                            <p class="text-gray-400">Our AI analyzes your argument's structure and gives you suggestions to make it more persuasive.</p>
+                        </div>
+                        <div class="feature-card p-8 rounded-lg text-center">
+                            <div class="text-4xl mb-4">🎭</div>
+                            <h4 class="text-2xl font-bold mb-2">✨ Tone Analysis</h4>
+                            <p class="text-gray-400">Understand the emotional impact of your speech with advanced tone and sentiment analysis.</p>
+                        </div>
+                        <div class="feature-card p-8 rounded-lg text-center">
+                            <div class="text-4xl mb-4">🤸</div>
+                            <h4 class="text-2xl font-bold mb-2">✨ Body Language Feedback</h4>
+                            <p class="text-gray-400">Upload a video to get feedback on eye contact, posture, and gestures (coming soon!).</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- AI Coach Section -->
-        <section id="coach" class="py-20 px-6 bg-gray-800">
+            <section id="pricing" class="py-20 px-6">
+                <div class="container mx-auto text-center">
+                     <h3 class="text-4xl font-bold text-center mb-8">Completely Free, For Everyone</h3>
+                     <p class="max-w-3xl mx-auto text-lg text-gray-300 mb-8">
+                        We believe powerful communication is a skill for everyone. That's why Orator.ai, with all its core features, is free to use. 
+                        Sign up to start improving today!
+                    </p>
+                    <button id="signup-btn-main" class="btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg">Sign Up for Free</button>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="bg-gray-900 text-center py-8">
+            <div class="container mx-auto">
+                <p>&copy; 2025 Orator.ai. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Coach App Page Content (Initially Hidden) -->
+    <main id="coach-page-container" class="hidden pt-20">
+        <section id="coach" class="py-20 px-6 bg-gray-800 min-h-screen">
             <div class="container mx-auto">
                 <h3 class="text-4xl font-bold text-center mb-12">Your Personal Coach Awaits</h3>
                 <div class="max-w-4xl mx-auto bg-gray-900 rounded-lg p-8 shadow-lg">
@@ -102,7 +159,7 @@
                             <span id="record-btn-text">Start Recording</span>
                         </button>
                          <button id="impromptu-btn" class="btn-secondary text-white font-bold py-4 px-6 rounded-full flex items-center space-x-2">
-                            <span class="text-xl">✨</span>
+                            <span class="text-xl">💡</span>
                             <span id="impromptu-btn-text">Get Topic</span>
                         </button>
                         <div id="recording-indicator" class="hidden ml-4 flex items-center space-x-2">
@@ -127,47 +184,20 @@
                 </div>
             </div>
         </section>
-
-        <!-- Pricing Section -->
-        <section id="pricing" class="py-20 px-6">
-            <div class="container mx-auto">
-                 <h3 class="text-4xl font-bold text-center mb-12">Find the Perfect Plan</h3>
-                <div class="flex flex-col md:flex-row justify-center items-center gap-8">
-                    <div class="feature-card p-8 rounded-lg w-full max-w-sm text-center border-2 border-indigo-500">
-                        <h4 class="text-2xl font-bold mb-2">Individual</h4>
-                        <p class="text-5xl font-extrabold my-4">$15<span class="text-lg font-medium text-gray-400">/mo</span></p>
-                        <ul class="text-left my-8 space-y-4">
-                            <li>✅ Unlimited Speech Analysis</li>
-                            <li>✅ Argumentation Feedback</li>
-                            <li>✅ ✨ Argument Strengthening</li>
-                            <li>✅ ✨ Impromptu Topic Generator</li>
-                        </ul>
-                        <button class="w-full btn-primary text-white font-bold py-3 px-8 rounded-lg">Choose Plan</button>
-                    </div>
-                     <div class="feature-card p-8 rounded-lg w-full max-w-sm text-center">
-                        <h4 class="text-2xl font-bold mb-2">Team</h4>
-                        <p class="text-5xl font-extrabold my-4">Contact Us</p>
-                         <ul class="text-left my-8 space-y-4">
-                            <li>✅ All Individual Features</li>
-                            <li>✅ Team Dashboard</li>
-                            <li>✅ Collaborative Tools</li>
-                            <li>✅ Dedicated Support</li>
-                        </ul>
-                        <button class="w-full btn-secondary text-white font-bold py-3 px-8 rounded-lg">Get in Touch</button>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
     
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-center py-8">
-        <div class="container mx-auto">
-            <p>&copy; 2025 Orator.ai. All rights reserved.</p>
+    <!-- Modals -->
+    <div id="auth-modal-container" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div id="auth-modal" class="bg-gray-800 rounded-lg shadow-xl w-full max-w-sm text-center p-8 transform transition-all opacity-0 -translate-y-4">
+            <h3 class="text-2xl font-bold mb-6">Welcome to Orator.ai</h3>
+            <p class="text-gray-300 mb-8">Sign in to start your personalized coaching session.</p>
+            <button id="google-signin-btn" class="w-full bg-white text-gray-800 font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-200 transition">
+                <svg class="w-6 h-6" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
+                <span>Sign In with Google</span>
+            </button>
+            <button id="close-auth-modal-btn" class="mt-6 text-gray-400 hover:text-white text-sm">Cancel</button>
         </div>
-    </footer>
-
-    <!-- Modal for Strengthening Arguments -->
+    </div>
     <div id="modal-container" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
         <div id="modal" class="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl transform transition-all opacity-0 -translate-y-4">
             <div class="p-6">
@@ -176,22 +206,19 @@
                     <button id="close-modal-btn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
                 </div>
                 <div id="modal-loader" class="text-center hidden">
-                    <svg class="animate-spin h-8 w-8 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                     <svg class="animate-spin h-8 w-8 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     <p class="mt-2">Thinking of suggestions...</p>
                 </div>
-                <div id="modal-content" class="text-gray-300 space-y-4 max-h-[60vh] overflow-y-auto">
-                    <!-- AI suggestions will go here -->
-                </div>
+                <div id="modal-content" class="text-gray-300 space-y-4 max-h-[60vh] overflow-y-auto"></div>
             </div>
         </div>
     </div>
 
 
-<script>
-    // DOM Elements
+<script type="module">
+    // --- DOM Elements ---
+    const landingPageContainer = document.getElementById('landing-page-container');
+    const coachPageContainer = document.getElementById('coach-page-container');
     const recordBtn = document.getElementById('record-btn');
     const recordBtnText = document.getElementById('record-btn-text');
     const recordingIndicator = document.getElementById('recording-indicator');
@@ -201,16 +228,71 @@
     const feedbackResults = document.getElementById('feedback-results');
     const impromptuBtn = document.getElementById('impromptu-btn');
     const topicDisplay = document.getElementById('topic-display');
-    const modalContainer = document.getElementById('modal-container');
-    const modal = document.getElementById('modal');
-    const closeModalBtn = document.getElementById('close-modal-btn');
-    const modalLoader = document.getElementById('modal-loader');
-    const modalContent = document.getElementById('modal-content');
+    const authContainer = document.getElementById('auth-container');
+    const authModalContainer = document.getElementById('auth-modal-container');
+    const authModal = document.getElementById('auth-modal');
+    const googleSignInBtn = document.getElementById('google-signin-btn');
+    const closeAuthModalBtn = document.getElementById('close-auth-modal-btn');
+    const signUpBtnMain = document.getElementById('signup-btn-main');
+    const tryCoachBtn = document.getElementById('try-coach-btn');
+    const coachNavLink = document.getElementById('coach-nav-link');
+    const homeLink = document.getElementById('home-link');
+    const navLinks = document.querySelectorAll('.nav-link');
 
-    // State
+    // --- State ---
     let isRecording = false;
     let recognition;
     let currentTranscript = '';
+    let currentUser = null;
+
+    // --- Page Navigation ---
+    function navigateTo(page) {
+        if (page === 'coach') {
+            landingPageContainer.classList.add('hidden');
+            coachPageContainer.classList.remove('hidden');
+        } else { // landing
+            coachPageContainer.classList.add('hidden');
+            landingPageContainer.classList.remove('hidden');
+        }
+        window.scrollTo(0, 0);
+    }
+
+    // --- Authentication ---
+    function updateUIForAuthState(user) {
+        currentUser = user;
+        if (user) {
+            authContainer.innerHTML = `<button id="signout-btn" class="btn-secondary text-white font-bold py-2 px-4 rounded-lg">Sign Out</button>`;
+            document.getElementById('signout-btn').addEventListener('click', handleSignOut);
+            navigateTo('coach');
+            closeAuthModal();
+        } else {
+            authContainer.innerHTML = `<button id="signin-btn" class="btn-primary text-white font-bold py-2 px-4 rounded-lg">Sign In</button>`;
+            document.getElementById('signin-btn').addEventListener('click', openAuthModal);
+            navigateTo('landing');
+        }
+    }
+
+    onAuthStateChanged(window.auth, updateUIForAuthState);
+
+    const handleSignIn = () => {
+        const provider = new window.GoogleAuthProvider();
+        signInWithPopup(window.auth, provider)
+            .catch(error => console.error("Sign in error", error));
+    };
+
+    const handleSignOut = () => {
+        signOut(window.auth).catch(error => console.error("Sign out error", error));
+    };
+
+    googleSignInBtn.addEventListener('click', handleSignIn);
+    signUpBtnMain.addEventListener('click', openAuthModal);
+    tryCoachBtn.addEventListener('click', () => {
+        if (currentUser) {
+            navigateTo('coach');
+        } else {
+            openAuthModal();
+        }
+    });
 
     // --- Speech Recognition Setup ---
     if ('webkitSpeechRecognition' in window) {
@@ -241,7 +323,7 @@
                 }
             }
             currentTranscript += finalTranscript;
-            transcriptionOutput.innerHTML = currentTranscript + '<i class="text-gray-500">' + interimTranscript + '</i>';
+            transcriptionOutput.innerHTML = currentTranscript + `<i class="text-gray-500">${interimTranscript}</i>`;
         };
 
         recognition.onerror = (event) => {
@@ -274,11 +356,25 @@
     });
 
     impromptuBtn.addEventListener('click', getImpromptuTopic);
-    closeModalBtn.addEventListener('click', closeModal);
-    modalContainer.addEventListener('click', (e) => {
-        if (e.target === modalContainer) {
-            closeModal();
+
+    homeLink.addEventListener('click', () => navigateTo('landing'));
+
+    coachNavLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentUser) {
+            navigateTo('coach');
+        } else {
+            openAuthModal();
         }
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo('landing');
+            const targetId = link.getAttribute('href');
+            document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+        });
     });
 
     // --- Gemini API Call Helper ---
@@ -343,7 +439,9 @@
             - "clarity_conciseness": A summary (2-3 sentences) on the speech's clarity and conciseness.
             - "filler_words": An analysis of potential filler words. Provide a JSON object where keys are detected filler words and values are their counts.
             - "pacing_feedback": Feedback on the pacing based on a speed of ${wordsPerMinute} words per minute.
-            - "argument_strength": An analysis of the argument structure. Identify the main claim, supporting points, and any potential logical fallacies. If no clear argument, state that.
+            - "tone_analysis": A brief analysis of the emotional tone (e.g., confident, hesitant, passionate).
+            - "body_language_feedback": Conceptual feedback on body language, assuming this was a video. Give general advice on posture, eye contact, and gestures.
+            - "argument_strength": An analysis of the argument structure. Identify the main claim, supporting points, and any potential logical fallacies.
             - "overall_impression": A brief overall impression and a key suggestion for improvement.
             Transcript: "${text}"`;
 
@@ -358,45 +456,6 @@
         }
     }
     
-    async function strengthenArgument(transcript, initialAnalysis) {
-        openModal();
-        modalLoader.classList.remove('hidden');
-        modalContent.innerHTML = '';
-        
-        const prompt = `You are an expert debate coach. A student gave the following speech: "${transcript}". 
-        Your initial analysis of their argument was: "${initialAnalysis}". 
-        Based on this, provide specific, actionable advice on how to strengthen their argument.
-        Provide your response as a JSON object with three keys: "thesis_suggestion", "evidence_ideas", and "counter_arguments".
-        "thesis_suggestion" should be a rewritten, more powerful thesis statement.
-        "evidence_ideas" should be a bulleted list of types of evidence they could find.
-        "counter_arguments" should be a bulleted list of potential counter-arguments to anticipate.`;
-
-        try {
-            const suggestions = await callGemini(prompt, true);
-            modalContent.innerHTML = `
-                <div class="space-y-4">
-                    <div>
-                        <h4 class="font-semibold text-lg text-indigo-300">Thesis Suggestion:</h4>
-                        <p>${suggestions.thesis_suggestion}</p>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-lg text-indigo-300">Evidence Ideas:</h4>
-                        <p>${suggestions.evidence_ideas.replace(/\* /g, '• ')}</p>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-lg text-indigo-300">Anticipate These Counter-Arguments:</h4>
-                         <p>${suggestions.counter_arguments.replace(/\* /g, '• ')}</p>
-                    </div>
-                </div>
-            `;
-        } catch(error) {
-            console.error('Error strengthening argument:', error);
-            modalContent.innerHTML = `<p class="text-red-400">Could not generate suggestions. Please try again.</p>`;
-        } finally {
-            modalLoader.classList.add('hidden');
-        }
-    }
-
     // --- UI Display Functions ---
     function displayError(message) {
         feedbackResults.innerHTML = `<div class="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg">${message}</div>`;
@@ -432,25 +491,67 @@
                         <h5 class="text-xl font-semibold mb-2">Pacing</h5>
                         <div class="text-center"><p class="text-4xl font-bold text-indigo-400">${wpm} WPM</p><p class="text-gray-300 mt-2">${feedback.pacing_feedback}</p></div>
                     </div>
+                    <div class="feature-card p-6 rounded-lg mb-6">
+                        <h5 class="text-xl font-semibold mb-2">Tone Analysis</h5>
+                        <p class="text-gray-300">${feedback.tone_analysis}</p>
+                    </div>
                     <div class="feature-card p-6 rounded-lg">
-                        <h5 class="text-xl font-semibold mb-2">Filler Words</h5>
-                        <div class="text-gray-300">${fillerWordHtml}</div>
+                        <h5 class="text-xl font-semibold mb-2">Body Language (Conceptual)</h5>
+                        <p class="text-gray-300">${feedback.body_language_feedback}</p>
                     </div>
                 </div>
             </div>`;
         
-        document.getElementById('strengthen-argument-btn').addEventListener('click', () => strengthenArgument(transcript, feedback.argument_strength));
+        document.getElementById('strengthen-argument-btn').addEventListener('click', () => strengthenArgument(transcript, feedback.argument_strength) );
     }
 
+    function openAuthModal() {
+        authModalContainer.classList.remove('hidden');
+        setTimeout(() => authModal.classList.remove('opacity-0', '-translate-y-4'), 10);
+    }
+
+    function closeAuthModal() {
+        authModal.classList.add('opacity-0', '-translate-y-4');
+        setTimeout(() => authModalContainer.classList.add('hidden'), 300);
+    }
+    closeAuthModalBtn.addEventListener('click', closeAuthModal);
+
+    const modalContainer = document.getElementById('modal-container');
+    const modal = document.getElementById('modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
     function openModal() {
         modalContainer.classList.remove('hidden');
         setTimeout(() => modal.classList.remove('opacity-0', '-translate-y-4'), 10);
     }
-
     function closeModal() {
         modal.classList.add('opacity-0', '-translate-y-4');
         setTimeout(() => modalContainer.classList.add('hidden'), 300);
     }
+    closeModalBtn.addEventListener('click', closeModal);
+    modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) closeModal();
+    });
+    
+    async function strengthenArgument(transcript, initialAnalysis) {
+        openModal();
+        const modalLoader = document.getElementById('modal-loader');
+        const modalContent = document.getElementById('modal-content');
+        modalLoader.classList.remove('hidden');
+        modalContent.innerHTML = '';
+        
+        const prompt = `You are an expert debate coach. A student gave the following speech: "${transcript}". Your initial analysis of their argument was: "${initialAnalysis}". Based on this, provide specific, actionable advice on how to strengthen their argument. Provide your response as a JSON object with three keys: "thesis_suggestion", "evidence_ideas", and "counter_arguments". "thesis_suggestion" should be a rewritten, more powerful thesis statement. "evidence_ideas" should be a bulleted list of types of evidence they could find. "counter_arguments" should be a bulleted list of potential counter-arguments to anticipate.`;
+
+        try {
+            const suggestions = await callGemini(prompt, true);
+            modalContent.innerHTML = `<div class="space-y-4"><div><h4 class="font-semibold text-lg text-indigo-300">Thesis Suggestion:</h4><p>${suggestions.thesis_suggestion}</p></div><div><h4 class="font-semibold text-lg text-indigo-300">Evidence Ideas:</h4><p>${suggestions.evidence_ideas.replace(/\* /g, '• ')}</p></div><div><h4 class="font-semibold text-lg text-indigo-300">Anticipate These Counter-Arguments:</h4><p>${suggestions.counter_arguments.replace(/\* /g, '• ')}</p></div></div>`;
+        } catch(error) {
+            console.error('Error strengthening argument:', error);
+            modalContent.innerHTML = `<p class="text-red-400">Could not generate suggestions. Please try again.</p>`;
+        } finally {
+            modalLoader.classList.add('hidden');
+        }
+    }
+
 
 </script>
 
